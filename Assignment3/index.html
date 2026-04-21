@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SimpleStorage DApp</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #0d0d1a;
+      color: #e2e2f0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 16px;
+    }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    header h1 {
+      font-size: 2rem;
+      color: #8b5cf6;
+      letter-spacing: 1px;
+    }
+    header p {
+      margin-top: 6px;
+      color: #7c7c99;
+      font-size: 0.9rem;
+    }
+
+    /* ── Card ─────────────────────────────────────────────────── */
+    .card {
+      background: #14142b;
+      border: 1px solid #2a2a4a;
+      border-radius: 14px;
+      padding: 28px 32px;
+      width: 100%;
+      max-width: 500px;
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #a78bfa;
+      margin-bottom: 18px;
+      border-bottom: 1px solid #2a2a4a;
+      padding-bottom: 10px;
+    }
+
+    /* ── Info Rows ────────────────────────────────────────────── */
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      font-size: 0.875rem;
+      gap: 12px;
+    }
+    .info-row .label { color: #7c7c99; white-space: nowrap; }
+    .info-row .value {
+      color: #e2e2f0;
+      word-break: break-all;
+      text-align: right;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge.connected { background: #14532d; color: #4ade80; }
+    .badge.disconnected { background: #3b1818; color: #f87171; }
+
+    /* ── Inputs & Buttons ─────────────────────────────────────── */
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 14px;
+      background: #0d0d1a;
+      border: 1px solid #3a3a5c;
+      border-radius: 8px;
+      color: #e2e2f0;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="number"]:focus { border-color: #8b5cf6; }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-purple { background: #7c3aed; color: #fff; }
+    .btn-blue   { background: #2563eb; color: #fff; }
+    .btn-green  { background: #15803d; color: #fff; }
+    .btn-red    { background: #b91c1c; color: #fff; }
+
+    /* ── Status Box ───────────────────────────────────────────── */
+    .status-box {
+      background: #0d0d1a;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.82rem;
+      color: #86efac;
+      min-height: 44px;
+      word-break: break-all;
+      line-height: 1.5;
+      margin-top: 4px;
+    }
+    .status-box.error { color: #f87171; }
+
+    /* ── Value Display ────────────────────────────────────────── */
+    .value-display {
+      text-align: center;
+      padding: 18px 0 6px;
+    }
+    .value-display .big-number {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #a78bfa;
+    }
+    .value-display .caption { font-size: 0.78rem; color: #7c7c99; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1>🔗 SimpleStorage DApp</h1>
+    <p>Blockchain Technology · Assignment 3 · Raman (123B1B240)</p>
+  </header>
+
+  <!-- Wallet Card -->
+  <div class="card">
+    <h2>🦊 Wallet / MetaMask</h2>
+    <div class="info-row">
+      <span class="label">Status</span>
+      <span class="value"><span id="walletStatus" class="badge disconnected">Disconnected</span></span>
+    </div>
+    <div class="info-row">
+      <span class="label">Account</span>
+      <span class="value" id="walletAccount">—</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Network</span>
+      <span class="value" id="walletNetwork">—</span>
+    </div>
+    <button class="btn btn-purple" onclick="connectWallet()">Connect MetaMask</button>
+  </div>
+
+  <!-- Contract Card -->
+  <div class="card">
+    <h2>📦 Contract Interaction</h2>
+    <div class="info-row">
+      <span class="label">Contract</span>
+      <span class="value" id="contractAddrDisplay">Not set</span>
+    </div>
+
+    <div class="value-display">
+      <div class="big-number" id="currentValue">—</div>
+      <div class="caption">Stored on-chain value</div>
+    </div>
+
+    <br/>
+    <input type="number" id="valueInput" placeholder="Enter a number to store..." min="0" />
+    <button class="btn btn-blue"  onclick="setValue()">✍️ Set Value (Transaction)</button>
+    <button class="btn btn-green" onclick="getValue()">📖 Get Value (Read-only)</button>
+    <button class="btn btn-red"   onclick="resetValue()">🔄 Reset to 0</button>
+
+    <div class="status-box" id="statusBox">Connect your wallet to start.</div>
+  </div>
+
+  <!-- Ethers.js v5 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+  <script>
+    // ── CONFIGURATION ────────────────────────────────────────────────────────
+    // Replace with your deployed contract address from Assignment 2
+    const CONTRACT_ADDRESS = "0xYourDeployedContractAddressHere";
+
+    const ABI = [
+      "function set(uint256 x) public",
+      "function reset() public",
+      "function get() public view returns (uint256)",
+      "function owner() public view returns (address)"
+    ];
+    // ─────────────────────────────────────────────────────────────────────────
+
+    let provider, signer, contract;
+
+    // Show the contract address in the UI
+    document.getElementById("contractAddrDisplay").textContent =
+      CONTRACT_ADDRESS === "0xYourDeployedContractAddressHere"
+        ? "⚠️ Update CONTRACT_ADDRESS in code"
+        : CONTRACT_ADDRESS.slice(0, 8) + "..." + CONTRACT_ADDRESS.slice(-6);
+
+    // ── WALLET ───────────────────────────────────────────────────────────────
+    async function connectWallet() {
+      if (typeof window.ethereum === "undefined") {
+        setStatus("❌ MetaMask not detected! Please install MetaMask extension.", true);
+        return;
+      }
+      try {
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        signer   = provider.getSigner();
+        contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
+        const account = await signer.getAddress();
+        const network = await provider.getNetwork();
+
+        document.getElementById("walletStatus").textContent  = "Connected";
+        document.getElementById("walletStatus").className    = "badge connected";
+        document.getElementById("walletAccount").textContent = account.slice(0,6) + "..." + account.slice(-4);
+        document.getElementById("walletNetwork").textContent = `${network.name} (Chain: ${network.chainId})`;
+
+        setStatus("✅ Wallet connected! You can now interact with the contract.");
+        await getValue();
+
+        // Listen for account/network changes
+        window.ethereum.on("accountsChanged", () => location.reload());
+        window.ethereum.on("chainChanged",    () => location.reload());
+      } catch (err) {
+        setStatus("❌ Connection failed: " + err.message, true);
+      }
+    }
+
+    // ── CONTRACT WRITE — SET ──────────────────────────────────────────────────
+    async function setValue() {
+      if (!ensureConnected()) return;
+      const val = document.getElementById("valueInput").value.trim();
+      if (val === "") { setStatus("⚠️ Please enter a number first.", true); return; }
+      try {
+        setStatus("⏳ Sending transaction to set value = " + val + "...");
+        const tx = await contract.set(parseInt(val));
+        setStatus("📡 Transaction sent! Hash: " + tx.hash + "\nWaiting for confirmation...");
+        await tx.wait();
+        setStatus("✅ Value successfully set to " + val + "!\nTx: " + tx.hash);
+        document.getElementById("currentValue").textContent = val;
+        document.getElementById("valueInput").value = "";
+      } catch (err) {
+        setStatus("❌ Error: " + err.message, true);
+      }
+    }
+
+    // ── CONTRACT READ — GET ───────────────────────────────────────────────────
+    async function getValue() {
+      if (!ensureConnected()) return;
+      try {
+        const val = await contract.get();
+        document.getElementById("currentValue").textContent = val.toString();
+        setStatus("📖 Current stored value: " + val.toString());
+      } catch (err) {
+        setStatus("❌ Error reading value: " + err.message, true);
+      }
+    }
+
+    // ── CONTRACT WRITE — RESET ────────────────────────────────────────────────
+    async function resetValue() {
+      if (!ensureConnected()) return;
+      try {
+        setStatus("⏳ Sending reset transaction...");
+        const tx = await contract.reset();
+        setStatus("📡 Reset tx sent: " + tx.hash + "\nWaiting for confirmation...");
+        await tx.wait();
+        setStatus("✅ Value has been reset to 0.\nTx: " + tx.hash);
+        document.getElementById("currentValue").textContent = "0";
+      } catch (err) {
+        setStatus("❌ Error: " + err.message, true);
+      }
+    }
+
+    // ── HELPERS ───────────────────────────────────────────────────────────────
+    function setStatus(msg, isError = false) {
+      const box = document.getElementById("statusBox");
+      box.textContent = msg;
+      box.className   = isError ? "status-box error" : "status-box";
+    }
+
+    function ensureConnected() {
+      if (!contract) {
+        setStatus("⚠️ Connect your MetaMask wallet first!", true);
+        return false;
+      }
+      return true;
+    }
+  </script>
+</body>
+</html>
