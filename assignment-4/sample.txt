@@ -1,0 +1,6 @@
+This is a sample file for IPFS upload demonstration.
+Blockchain Technology – Assignment 4
+Student: Raman | Roll: 123B1B240
+
+IPFS (InterPlanetary File System) is a protocol for decentralized file storage.
+Once uploaded, this file is content-addressed using its CID (Content Identifier).
